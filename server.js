@@ -82,13 +82,22 @@ app.post('/login', function (req, res) {
         if (data.length > 0) {
             const name = data[0].Tenkh;
             const token = jwt.sign({ name }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
-            res.cookie('token', token);
+
+            // ✅ Sửa tại đây
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "None",
+                maxAge: 24 * 60 * 60 * 1000 // 1 ngày
+            });
+
             return res.json({ Status: "Đăng nhập thành công" });
         } else {
             return res.json({ Message: "Tài khoản không tồn tại" });
         }
     });
 });
+
 
 app.post('/google-login', function (req, res) {
     const { email, name, googleId } = req.body;
