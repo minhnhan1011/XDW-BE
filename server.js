@@ -21,9 +21,9 @@ app.use(express.json());
 
 const db = mysql.createConnection({
     host: "sql12.freesqldatabase.com",
-    user: "sql12772024",
-    password: "2Fl8L7NcMg",
-    database: "sql12772024"
+    user: "sql12774529",
+    password: "MBMHhuifbH",
+    database: "sql12774529"
 });
 
 var amadeus = new Amadeus({
