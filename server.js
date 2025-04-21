@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
-    origin: ["http://localhost:3000"],
+    origin: ["https://xdw-fe.vercel.app/"],
     methods: ["POST", "GET"],
     credentials: true
 }));
