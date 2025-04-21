@@ -40,22 +40,33 @@ const verifyUser = (req, res, next) => {
             if (err) {
                 return res.json({ Message: "Authentication Error." });
             } else {
-                req.email = decoded.email;
+                req.name = decoded.name;
                 next();
             }
         });
     }
 };
+app.get("/mytickets", verifyUser, (req, res) => {
+    const name = req.name;
 
-app.get('/mytickets', verifyUser, (req, res) => {
-    const email = req.email;
-    const sql = `SELECT * FROM thongtinvemaybay WHERE email = ?`;
-    db.query(sql, [email], (err, data) => {
-        if (err) return res.json({ Status: "Error", Message: "Lỗi khi lấy vé" });
-        return res.json({ Status: "Success", data });
+    const findEmailQuery = "SELECT email FROM khachhang WHERE Tenkh = ?";
+    db.query(findEmailQuery, [name], (err, result) => {
+        if (err || result.length === 0) {
+            return res.json({ Status: "Error", Message: "Không tìm thấy người dùng" });
+        }
+
+        const email = result[0].email;
+
+        const sql = "SELECT * FROM thongtinvemaybay WHERE email = ?";
+        db.query(sql, [email], (err, data) => {
+            if (err) {
+                return res.json({ Status: "Error", Message: "Lỗi khi lấy vé máy bay" });
+            } else {
+                return res.json({ Status: "Success", data });
+            }
+        });
     });
 });
-
 
 
 app.get('/auth', verifyUser, function (req, res) {
@@ -204,10 +215,7 @@ app.post("/vemotchieu", async function (req, res) {
     }
 });
 
-// Thêm verifyUser
-app.post('/datve', verifyUser, function (req, res) {
-    const email = req.email;
-
+app.post('/datve', function (req, res) {
     const values = [
         req.body.mamaybay,
         req.body.diemdi,
@@ -218,18 +226,19 @@ app.post('/datve', verifyUser, function (req, res) {
         req.body.gia,
         req.body.ho,
         req.body.ten,
-        email,
+        req.body.email,
         req.body.sdt,
         req.body.dc,
     ];
-
-    const sqlString = `INSERT INTO thongtinvemaybay(mamaybay,diemdi,diemden,ngaydi,ngayden,hanghangkhong,gia,ho,ten,email,sdt,dc) VALUES(?)`;
+    const sqlString = "INSERT INTO thongtinvemaybay(mamaybay,diemdi,diemden,ngaydi,ngayden,hanghangkhong,gia,ho,ten,email,sdt,dc) VALUES(?)";
     db.query(sqlString, [values], function (err, data) {
-        if (err) return res.json("error");
-        return res.json(data);
+        if (err) {
+            return res.json("error");
+        } else {
+            return res.json(data);
+        }
     });
 });
-
 
 app.get("/users", (req, res) => {
     const sql = "SELECT * FROM khachhang";
