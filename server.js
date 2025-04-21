@@ -141,21 +141,35 @@ app.post('/signup', function(req, res) {
     const checkEmailQuery = "SELECT * FROM khachhang WHERE email = ?";
     db.query(checkEmailQuery, [email], function(err, data) {
         if (err) {
-            return res.status(500).json("Lỗi server khi kiểm tra email");
+            return res.status(500).json({ Message: "Lỗi server khi kiểm tra email" });
         }
+
         if (data.length > 0) {
-            return res.status(400).json("Email đã tồn tại");
+            return res.status(400).json({ Message: "Email đã tồn tại" });
         } else {
             const insertQuery = "INSERT INTO khachhang(Tenkh, sdt, email, matkhau) VALUES (?, ?, ?, ?)";
             db.query(insertQuery, [name, phone, email, password], function(err, result) {
                 if (err) {
-                    return res.status(500).json("Lỗi server khi đăng ký");
+                    return res.status(500).json({ Message: "Lỗi server khi đăng ký" });
                 }
-                return res.status(200).json("Đăng ký thành công");
+
+                // Tạo token ngay sau khi đăng ký thành công
+                const token = jwt.sign({ name }, "our-jsonwebtoken-secret-key", { expiresIn: '1d' });
+
+                // Gửi token vào cookie
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: true,          // bật nếu bạn dùng https
+                    sameSite: 'None',      // để FE có thể gửi cookie từ domain khác (vercel)
+                    maxAge: 24 * 60 * 60 * 1000 // 1 ngày
+                });
+
+                return res.status(200).json({ Status: "Đăng ký thành công" });
             });
         }
     });
 });
+
 
 app.post("/vekhuhoi", async function (req, res) {
     departure = req.body.ngaydi;
